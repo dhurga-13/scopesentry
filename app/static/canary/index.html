@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ScopeSentry-R Canary Revocation Twin & Migration Gate Console">
+  <title>ScopeSentry-R · Canary Twin & Migration Gate</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09111f;
+      --surface: #101c2d;
+      --surface-raised: #15243a;
+      --surface-soft: #1a2b43;
+      --border: #31445f;
+      --text: #f4f7fb;
+      --muted: #aebed2;
+      --blue: #71b7ff;
+      --green: #55d68b;
+      --green-soft: #123a2b;
+      --amber: #ffc966;
+      --amber-soft: #432f0b;
+      --red: #ff8585;
+      --red-soft: #461c25;
+      --purple: #c6a0ff;
+      --focus: #8ed0ff;
+      --radius: 14px;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: radial-gradient(circle at 80% 0%, rgba(58, 94, 145, 0.28), transparent 38rem), var(--bg);
+      line-height: 1.55;
+      padding: 2rem 1.25rem;
+    }
+    .container {
+      width: min(1080px, 100%);
+      margin-inline: auto;
+    }
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    .eyebrow {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue);
+      margin: 0 0 0.35rem 0;
+    }
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 2.1rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .nav-links {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .nav-links a {
+      color: var(--focus);
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.6rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+    select, input {
+      width: 100%;
+      padding: 0.75rem 0.95rem;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(142, 208, 255, 0.25);
+    }
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    button {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem 1.4rem;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, transform 0.1s;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-primary { background: var(--focus); color: #06111f; border-color: var(--focus); }
+    .btn-secondary { background: var(--surface-soft); color: var(--text); border-color: var(--border); }
+    .btn-secondary:hover { background: var(--surface-raised); }
+    .btn-primary:hover { opacity: 0.92; }
+
+    .result-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.6rem;
+      margin-top: 1.8rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+    }
+    .badge-approved { background: var(--green-soft); color: var(--green); border: 1px solid var(--green); }
+    .badge-indeterminate { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber); }
+    .badge-rejected { background: var(--red-soft); color: var(--red); border: 1px solid var(--red); }
+    .badge-synthesized { background: #262d50; color: var(--blue); border: 1px solid var(--blue); }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin: 1.4rem 0;
+    }
+    .detail-card {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .detail-card h3 {
+      margin: 0 0 0.75rem 0;
+      font-size: 1rem;
+      color: var(--blue);
+    }
+    .hash-snippet {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.8rem;
+      color: var(--purple);
+      background: rgba(0,0,0,0.35);
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.65rem;
+    }
+    .chip {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .chip-parent { border-color: var(--blue); color: var(--blue); }
+    .chip-child { border-color: var(--muted); color: var(--muted); }
+    .chip-sibling { border-color: var(--amber); color: var(--amber); }
+    .chip-replacement { border-color: var(--green); color: var(--green); }
+
+    .witness-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .witness-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <p class="eyebrow">ScopeSentry-R Innovation Console</p>
+      <h1>Evidence-Calibrated Canary Revocation Twin</h1>
+      <p class="subtitle">Interactive Verification of OAuth Credential Migration and Revocation Invariants</p>
+      <div class="nav-links">
+        <a href="/demo">← Back to Scenario Dashboard</a>
+        <a href="/docs" target="_blank">OpenAPI Swagger Docs ↗</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <div class="grid-3">
+          <div>
+            <label for="provider-select">Identity Provider</label>
+            <select id="provider-select">
+              <option value="mock_enterprise">mock_enterprise (Enterprise OAuth)</option>
+              <option value="mock_code_host">mock_code_host (Developer Host)</option>
+            </select>
+          </div>
+          <div>
+            <label for="version-select">Provider Calibration Profile</label>
+            <select id="version-select">
+              <option value="v1">v1 (Calibrated Ground Truth Present)</option>
+              <option value="v99">v99 (Uncalibrated / Unknown Provider Version)</option>
+            </select>
+          </div>
+          <div>
+            <label for="scopes-input">Target Permissions / Scopes</label>
+            <input type="text" id="scopes-input" value="read:data, profile, write:audit" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" id="btn-synthesize">1. Synthesize Canary Family</button>
+          <button class="btn-primary" id="btn-verify">2. Verify Migration Gate</button>
+        </div>
+
+        <div id="output-area" class="result-box" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+            <span id="output-badge" class="badge"></span>
+            <span id="output-explanation" style="font-size: 0.95rem;"></span>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-card">
+              <h3>Canary Credential Family</h3>
+              <p><strong>Family ID:</strong> <span id="out-family-id">-</span></p>
+              <p><strong>Topology Hash (SHA-256):</strong></p>
+              <p><code class="hash-snippet" id="out-topo-hash">-</code></p>
+              <div class="chips" id="out-roles"></div>
+            </div>
+
+            <div class="detail-card">
+              <h3>Calibration Engine Verdict</h3>
+              <p><strong>Status:</strong> <span id="out-calib-verdict" style="font-weight: 700;">-</span></p>
+              <p><strong>Confidence:</strong> <span id="out-calib-conf">-</span></p>
+              <p><strong>Ground Truth Fixture:</strong> <span id="out-calib-fixture">-</span></p>
+              <div id="out-discrepancies" style="color: var(--red); font-size: 0.85rem; margin-top: 0.5rem; display: none;"></div>
+            </div>
+          </div>
+
+          <div class="detail-card" style="margin-top: 1rem;">
+            <h3>Cryptographic Invariant Witness Bundle</h3>
+            <p style="margin-bottom: 0.75rem;"><strong>Bundle Digest (SHA-256):</strong> <code class="hash-snippet" id="out-bundle-digest">-</code></p>
+            <ul class="witness-list" id="out-witness-list"></ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const providerSel = document.getElementById("provider-select");
+    const versionSel = document.getElementById("version-select");
+    const scopesInp = document.getElementById("scopes-input");
+    const btnSynth = document.getElementById("btn-synthesize");
+    const btnVerif = document.getElementById("btn-verify");
+    const outputArea = document.getElementById("output-area");
+    const outBadge = document.getElementById("output-badge");
+    const outExplanation = document.getElementById("output-explanation");
+    const outFamilyId = document.getElementById("out-family-id");
+    const outTopoHash = document.getElementById("out-topo-hash");
+    const outRoles = document.getElementById("out-roles");
+    const outCalibVerdict = document.getElementById("out-calib-verdict");
+    const outCalibConf = document.getElementById("out-calib-conf");
+    const outCalibFixture = document.getElementById("out-calib-fixture");
+    const outDiscrepancies = document.getElementById("out-discrepancies");
+    const outBundleDigest = document.getElementById("out-bundle-digest");
+    const outWitnessList = document.getElementById("out-witness-list");
+
+    function getScopes() {
+      return scopesInp.value.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
+    btnSynth.addEventListener("click", async () => {
+      btnSynth.disabled = true;
+      try {
+        const res = await fetch("/canary/experiment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: providerSel.value,
+            target_scopes: getScopes()
+          })
+        });
+        const data = await res.json();
+        outputArea.style.display = "block";
+        outBadge.className = "badge badge-synthesized";
+        outBadge.textContent = "SYNTHESIZED";
+        outExplanation.textContent = "Synthesized dependency-equivalent canary credential family with 4 distinct roles.";
+        outFamilyId.textContent = data.family_id;
+        outTopoHash.textContent = data.topology_hash;
+
+        outRoles.replaceChildren();
+        Object.values(data.credentials || {}).forEach(c => {
+          const chip = document.createElement("span");
+          chip.className = `chip chip-${c.role}`;
+          chip.textContent = `${c.role.toUpperCase()}: ${c.credential_id.split("-").pop()}`;
+          outRoles.appendChild(chip);
+        });
+
+        outCalibVerdict.textContent = "Pending Verification";
+        outCalibVerdict.style.color = "var(--muted)";
+        outCalibConf.textContent = "-";
+        outCalibFixture.textContent = "Click 'Verify Migration Gate'";
+        outDiscrepancies.style.display = "none";
+        outBundleDigest.textContent = "-";
+        outWitnessList.replaceChildren();
+      } catch (err) {
+        alert("Synthesize request failed: " + err.message);
+      } finally {
+        btnSynth.disabled = false;
+      }
+    });
+
+    btnVerif.addEventListener("click", async () => {
+      btnVerif.disabled = true;
+      try {
+        const res = await fetch("/migration/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: providerSel.value,
+            provider_config_version: versionSel.value,
+            target_scopes: getScopes(),
+            require_calibration: true
+          })
+        });
+        const data = await res.json();
+        outputArea.style.display = "block";
+
+        if (data.decision === "approved") {
+          outBadge.className = "badge badge-approved";
+          outBadge.textContent = "APPROVED";
+        } else if (data.decision === "indeterminate") {
+          outBadge.className = "badge badge-indeterminate";
+          outBadge.textContent = "INDETERMINATE";
+        } else {
+          outBadge.className = "badge badge-rejected";
+          outBadge.textContent = "REJECTED";
+        }
+        outExplanation.textContent = data.explanation;
+
+        outFamilyId.textContent = data.canary_family_id;
+        outTopoHash.textContent = data.topology_hash;
+
+        if (data.calibration_result) {
+          const v = data.calibration_result.verdict;
+          outCalibVerdict.textContent = v.toUpperCase();
+          outCalibVerdict.style.color = v === "calibrated" ? "var(--green)" : (v === "unsupported" ? "var(--amber)" : "var(--red)");
+          outCalibConf.textContent = Math.round(data.calibration_result.confidence * 100) + "%";
+          outCalibFixture.textContent = data.calibration_result.fixture_id || "None";
+
+          if (data.calibration_result.discrepancies && data.calibration_result.discrepancies.length > 0) {
+            outDiscrepancies.style.display = "block";
+            outDiscrepancies.replaceChildren();
+            data.calibration_result.discrepancies.forEach(d => {
+              const p = document.createElement("p");
+              p.textContent = "• " + d;
+              p.style.margin = "0.2rem 0";
+              outDiscrepancies.appendChild(p);
+            });
+          } else {
+            outDiscrepancies.style.display = "none";
+          }
+        }
+
+        if (data.witness_bundle) {
+          outBundleDigest.textContent = data.witness_bundle.bundle_digest;
+          outWitnessList.replaceChildren();
+          (data.witness_bundle.witnesses || []).forEach(w => {
+            const li = document.createElement("li");
+            li.className = "witness-item";
+            li.innerHTML = `<span><strong>${w.witness_type}</strong>: ${w.description}</span> <span class="badge ${w.passed ? 'badge-approved' : 'badge-rejected'}">${w.passed ? 'VALID' : 'FAILED'}</span>`;
+            outWitnessList.appendChild(li);
+          });
+        }
+      } catch (err) {
+        alert("Verification request failed: " + err.message);
+      } finally {
+        btnVerif.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

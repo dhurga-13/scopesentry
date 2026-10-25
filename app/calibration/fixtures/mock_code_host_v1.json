@@ -1,0 +1,19 @@
+{
+  "fixture_id": "gt-mock-code-host-v1",
+  "provider": "mock_code_host",
+  "provider_config_version": "v1",
+  "recorded_at": "2026-01-01T00:00:00Z",
+  "topology_hash": "__placeholder__",
+  "revoked_role": "parent",
+  "expected_surviving_roles": [
+    "sibling",
+    "replacement"
+  ],
+  "expected_invalidated_roles": [
+    "child"
+  ],
+  "propagation_delay_ms": 200,
+  "confidence_score": 0.95,
+  "signature": "",
+  "provenance": "synthetic_reference"
+}

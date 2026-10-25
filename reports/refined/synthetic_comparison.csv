@@ -1,0 +1,5 @@
+case,baseline_decision,refined_decision,calibration,provenance
+matching_synthetic,approved,indeterminate,calibrated,synthetic_reference
+contradictory_simulator,rejected,indeterminate,divergent,synthetic_reference
+missing_reference,approved,indeterminate,unsupported,unavailable
+excess_authority,rejected,rejected,calibrated,synthetic_reference

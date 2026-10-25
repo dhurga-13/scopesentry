@@ -1,0 +1,19 @@
+{
+  "fixture_id": "gt-mock-enterprise-v1",
+  "provider": "mock_enterprise",
+  "provider_config_version": "v1",
+  "recorded_at": "2026-01-01T00:00:00Z",
+  "topology_hash": "__placeholder__",
+  "revoked_role": "parent",
+  "expected_surviving_roles": [
+    "sibling",
+    "replacement"
+  ],
+  "expected_invalidated_roles": [
+    "child"
+  ],
+  "propagation_delay_ms": 150,
+  "confidence_score": 0.98,
+  "signature": "",
+  "provenance": "synthetic_reference"
+}

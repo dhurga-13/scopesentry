@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+*.db
+Documents/
+runtime/
+reports/release/
+.test-tmp/
